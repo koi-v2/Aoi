@@ -22,6 +22,7 @@ import { AiPhotoStudioModal } from './components/AiPhotoStudioModal';
 import { ProfileModal } from './components/ProfileModal';
 import { syncEngine } from './utils/multiplayerSync';
 import { sounds } from './utils/audio';
+import { resolveWalkPosition } from './utils/collision';
 
 export default function App() {
   const [gameState, setGameState] = useState<'TITLE_SCREEN' | 'PLAYING'>('TITLE_SCREEN');
@@ -187,9 +188,12 @@ export default function App() {
           if (Math.random() < 0.35) {
             const dx = (Math.random() - 0.5) * 12;
             const dy = (Math.random() - 0.5) * 10;
-            const newX = Math.max(10, Math.min(90, bot.x + dx));
-            const newY = Math.max(25, Math.min(88, bot.y + dy));
-            const newDir = dx < 0 ? 'left' : 'right';
+            const proposedX = Math.max(10, Math.min(90, bot.x + dx));
+            const proposedY = Math.max(25, Math.min(88, bot.y + dy));
+            const resolved = resolveWalkPosition(bot.map, proposedX, proposedY, bot.x, bot.y);
+            const newX = resolved.x;
+            const newY = resolved.y;
+            const newDir = newX < bot.x ? 'left' : 'right';
 
             return {
               ...bot,
@@ -263,12 +267,17 @@ export default function App() {
         e.preventDefault();
         sounds.playStep();
         setPlayer((prev) => {
-          const nextX = Math.max(8, Math.min(92, prev.x + dx));
-          const nextY = Math.max(20, Math.min(90, prev.y + dy));
+          const next = resolveWalkPosition(
+            currentMap,
+            Math.max(8, Math.min(92, prev.x + dx)),
+            Math.max(20, Math.min(90, prev.y + dy)),
+            prev.x,
+            prev.y,
+          );
           return {
             ...prev,
-            x: nextX,
-            y: nextY,
+            x: next.x,
+            y: next.y,
             direction: dir,
             currentAction: 'walk',
           };
@@ -283,17 +292,20 @@ export default function App() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [gameState, player.direction]);
+  }, [gameState, player.direction, currentMap]);
 
   // Movement handler from click
   const handleMovePlayer = (newX: number, newY: number) => {
-    setPlayer((prev) => ({
-      ...prev,
-      x: newX,
-      y: newY,
-      direction: newX < prev.x ? 'left' : 'right',
-      currentAction: 'walk',
-    }));
+    setPlayer((prev) => {
+      const next = resolveWalkPosition(currentMap, newX, newY, prev.x, prev.y);
+      return {
+        ...prev,
+        x: next.x,
+        y: next.y,
+        direction: next.x < prev.x ? 'left' : 'right',
+        currentAction: 'walk',
+      };
+    });
 
     setTimeout(() => {
       setPlayer((prev) => (prev.currentAction === 'walk' ? { ...prev, currentAction: 'idle' } : prev));
