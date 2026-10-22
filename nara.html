@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#132b3b">
+<title>Nara World</title>
+<style>
+:root{--ink:#102838;--panel:#183b4b;--gold:#ffd166;--mint:#80edc3}
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#102838;color:#fff;font-family:system-ui,-apple-system,Segoe UI,sans-serif;touch-action:none;user-select:none;-webkit-user-select:none}
+#game{position:fixed;inset:0;width:100%;height:100%;display:block;image-rendering:pixelated;background:#83d8ee}
+#hud{position:fixed;inset:0;pointer-events:none;display:flex;flex-direction:column;justify-content:space-between;padding: max(8px,env(safe-area-inset-top)) 10px max(10px,env(safe-area-inset-bottom))}
+.top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}.brand,.stats,.hint{background:#102838d9;border:2px solid #ffffff30;border-radius:12px;padding:7px 10px;box-shadow:0 3px 0 #091b26aa}.brand{font-weight:900;letter-spacing:.5px;color:var(--gold);font-size:15px}.brand small{display:block;color:#d9f3f7;font-weight:600;font-size:10px;letter-spacing:0}.stats{font-size:11px;font-weight:700;line-height:1.6;text-align:right}.bottom{display:flex;justify-content:space-between;align-items:flex-end;gap:10px}.hint{font-size:10px;color:#e3faff;max-width:42%;line-height:1.4}.controls{pointer-events:auto;display:flex;align-items:flex-end;gap:7px}.group{display:flex;gap:6px;align-items:flex-end}.btn{width:54px;height:54px;border:2px solid #ffffff80;border-radius:15px;background:#14394fd9;color:#fff;font-weight:900;font-size:21px;box-shadow:0 4px 0 #081d2b;display:grid;place-items:center;touch-action:none;outline:none}.btn:active,.btn.active{transform:translateY(3px);box-shadow:0 1px 0 #081d2b;background:#26738a}.btn.action{width:58px;height:58px;font-size:12px;line-height:1.1;color:var(--gold)}.btn.jump{color:var(--mint)}#inventory{position:fixed;left:50%;bottom:max(82px,calc(env(safe-area-inset-bottom) + 78px));transform:translateX(-50%);display:flex;gap:5px;pointer-events:auto}.slot{width:43px;height:43px;border:2px solid #ffffff7a;border-radius:9px;background:#173b4ddd;display:grid;place-items:center;font-size:22px;position:relative}.slot small{position:absolute;right:3px;bottom:0;font-size:9px;font-weight:900;color:#fff;text-shadow:1px 1px #000}.slot.selected{border-color:var(--gold);box-shadow:0 0 0 2px #ffd16660}.slot span{filter:drop-shadow(1px 2px #102838)}#toast{position:fixed;top:22%;left:50%;transform:translateX(-50%);background:#102838e8;padding:8px 14px;border-radius:12px;border:1px solid #ffffff50;font-size:12px;font-weight:800;opacity:0;transition:opacity .2s;pointer-events:none;white-space:nowrap}#start{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(#0b2535b8,#0b2535eb);padding:20px}#card{width:min(380px,100%);background:#17394b;border:2px solid #ffffff40;border-radius:20px;padding:22px;text-align:center;box-shadow:0 10px 0 #091d2b}#card h1{color:var(--gold);margin:0 0 6px;font-size:32px}#card p{font-size:13px;line-height:1.55;color:#d7f0f3}#play{background:var(--gold);color:#173040;border:0;border-radius:12px;padding:13px 28px;font-weight:1000;font-size:16px;margin-top:8px}.tiny{font-size:10px!important;color:#a7d1d9!important}
+@media (max-height:430px){.btn{width:46px;height:46px;border-radius:12px}.btn.action{width:50px;height:50px}.slot{width:36px;height:36px;font-size:18px}#inventory{bottom:67px}.brand{font-size:12px}.stats{font-size:10px}.hint{font-size:9px}}
+</style>
+</head>
+<body>
+<canvas id="game" aria-label="Nara World game"></canvas>
+<div id="hud">
+ <div class="top"><div class="brand">✦ NARA WORLD<small>MINI BLOCK ADVENTURE</small></div><div class="stats"><div>🪙 <span id="coins">0</span></div><div>🧱 <span id="blocks">12</span> blok</div></div></div>
+ <div class="bottom"><div class="hint">Jalan, lompat, hancurkan blok lalu pasang blok pilihanmu.</div><div class="controls">
+  <div class="group"><button class="btn" data-hold="left" aria-label="Kiri">◀</button><button class="btn" data-hold="right" aria-label="Kanan">▶</button></div>
+  <div class="group"><button class="btn action" id="mine">TINJU<br>⛏</button><button class="btn action jump" data-hold="jump">LOMPAT<br>⬆</button><button class="btn action" id="place">PASANG<br>＋</button></div>
+ </div></div>
+</div>
+<div id="inventory"><button class="slot selected" data-item="dirt" title="Tanah"><span>🟫</span><small>12</small></button><button class="slot" data-item="grass" title="Rumput"><span>🟩</span><small>0</small></button><button class="slot" data-item="stone" title="Batu"><span>⬜</span><small>0</small></button><button class="slot" data-item="wood" title="Kayu"><span>🪵</span><small>0</small></button></div>
+<div id="toast"></div>
+<div id="start"><div id="card"><h1>NARA WORLD</h1><p>Bangun dunia blokmu sendiri! Jelajahi tanah hijau, lompat, tinju blok untuk mengumpulkan material, lalu pasang blok di tempat yang kamu mau.</p><p class="tiny">Kontrol layar sentuh • Progres tersimpan otomatis di perangkat</p><button id="play">MULAI MAIN ▶</button></div></div>
+<script>
+(()=>{'use strict';
+const canvas=document.getElementById('game'),ctx=canvas.getContext('2d');
+const TILE=32,WORLD_W=150,WORLD_H=32;
+let vw=innerWidth,vh=innerHeight,dpr=1,camX=0,camY=0,last=0,toastTimer=0,chosen='dirt',coins=0,started=false;
+const colors={grass:'#65bf59',dirt:'#9c633e',stone:'#899aa5',wood:'#b77a45'};
+const names={grass:'Rumput',dirt:'Tanah',stone:'Batu',wood:'Kayu'};
+let inv={dirt:12,grass:0,stone:0,wood:0},world=[],keys={left:false,right:false,jump:false},jumpQueued=false,attack=0,face=1;
+const player={x:7*TILE,y:0,w:21,h:29,vx:0,vy:0,onGround:false,walk:0};
+function resize(){vw=innerWidth;vh=innerHeight;dpr=Math.min(devicePixelRatio||1,2);canvas.width=Math.round(vw*dpr);canvas.height=Math.round(vh*dpr);canvas.style.width=vw+'px';canvas.style.height=vh+'px';ctx.setTransform(dpr,0,0,dpr,0,0)}
+addEventListener('resize',resize);resize();
+function makeWorld(){world=Array.from({length:WORLD_W},()=>Array(WORLD_H).fill(null));for(let x=0;x<WORLD_W;x++){let h=16+Math.round(Math.sin(x*.17)*1.4+Math.sin(x*.055)*2);h=Math.max(12,Math.min(20,h));for(let y=h;y<WORLD_H;y++){world[x][y]=y===h?'grass':y<h+4?'dirt':'stone';}if(x>10&&x< WORLD_W-10&&x%23===8){let trunk=h-1;for(let k=1;k<=3;k++)if(trunk-k>=0)world[x][trunk-k]='wood';for(let dx=-2;dx<=2;dx++)for(let dy=-5;dy<=-3;dy++){let xx=x+dx,yy=h+dy;if(xx>=0&&xx<WORLD_W&&yy>=0)world[xx][yy]='grass';}}}for(let x=0;x< WORLD_W;x++){for(let y=0;y< WORLD_H;y++){if(world[x][y]==='grass'&&y>0&&world[x][y-1]==='grass')world[x][y-1]=null;}}}
+function groundY(x){x=Math.max(0,Math.min(WORLD_W-1,Math.floor(x/TILE)));for(let y=0;y<WORLD_H;y++)if(world[x][y])return y*TILE;return (WORLD_H-1)*TILE}
+function save(){try{localStorage.setItem('nara-world-save-v1',JSON.stringify({world,inv,coins,px:player.x,py:player.y}))}catch(e){}}
+function load(){try{let s=JSON.parse(localStorage.getItem('nara-world-save-v1'));if(s&&s.world&&s.world.length===WORLD_W){world=s.world;inv={...inv,...s.inv};coins=s.coins||0;player.x=Number.isFinite(s.px)?s.px:7*TILE;player.y=Number.isFinite(s.py)?s.py:groundY(player.x)-player.h;return true}}catch(e){}return false}
+makeWorld();if(!load())player.y=groundY(player.x)-player.h;
+function showToast(s){let el=document.getElementById('toast');el.textContent=s;el.style.opacity=1;clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.style.opacity=0,1350)}
+function updateHud(){document.getElementById('coins').textContent=coins;document.getElementById('blocks').textContent=inv.dirt+inv.grass+inv.stone+inv.wood;document.querySelectorAll('.slot').forEach(el=>{let type=el.dataset.item;el.querySelector('small').textContent=inv[type]||0;el.classList.toggle('selected',type===chosen)})}
+function solidAt(px,py){let x0=Math.floor(px/TILE),x1=Math.floor((px-0.01)/TILE),y0=Math.floor(py/TILE),y1=Math.floor((py-0.01)/TILE);return [ [x0,y0],[x1,y0],[x0,y1],[x1,y1] ].some(([x,y])=>x>=0&&x<WORLD_W&&y>=0&&y<WORLD_H&&world[x][y])}
+function blockAt(px,py){let x=Math.floor(px/TILE),y=Math.floor(py/TILE);return x>=0&&x<WORLD_W&&y>=0&&y<WORLD_H?{x,y,type:world[x][y]}:null}
+function playerBox(x=player.x,y=player.y){return{x:x-player.w/2,y:y,w:player.w,h:player.h}}
+function collides(x,y){let b=playerBox(x,y);return solidAt(b.x,b.y)||solidAt(b.x+b.w,b.y)||solidAt(b.x,b.y+b.h)||solidAt(b.x+b.w,b.y+b.h)}
+function movePlayer(dt){let speed=190,dir=(keys.right?1:0)-(keys.left?1:0);if(dir)face=dir;player.vx=dir*speed;player.x+=player.vx*dt;if(collides(player.x,player.y)){let step=Math.sign(player.vx);for(let i=0;i<Math.ceil(Math.abs(player.vx*dt));i++){player.x-=step;if(!collides(player.x,player.y))break}}player.x=Math.max(player.w/2,Math.min(WORLD_W*TILE-player.w/2,player.x));if(jumpQueued&&player.onGround){player.vy=-440;player.onGround=false}jumpQueued=false;player.vy=Math.min(760,player.vy+1100*dt);let dy=player.vy*dt;player.y+=dy;player.onGround=false;if(collides(player.x,player.y)){let step=Math.sign(dy);for(let i=0;i<Math.ceil(Math.abs(dy));i++){player.y-=step;if(!collides(player.x,player.y)){if(step>0)player.onGround=true;break}}player.vy=0}player.walk+=Math.abs(dir)*dt*9}
+function targetBlock(){let px=player.x+face*35,py=player.y+player.h*.48;let b=blockAt(px,py);if(!b||!b.type){b=blockAt(px,player.y+player.h+5)}return b}
+function mineBlock(){let b=targetBlock();if(!b||!b.type){showToast('Dekati blok dulu!');return}if(Math.abs((b.x+.5)*TILE-player.x)>TILE*2.1||Math.abs((b.y+.5)*TILE-(player.y+player.h/2))>TILE*2.2){showToast('Blok terlalu jauh!');return}if(b.y<=1){showToast('Blok ini tidak bisa dihancurkan');return}inv[b.type]=(inv[b.type]||0)+1;world[b.x][b.y]=null;coins+=1;attack=.22;updateHud();save()}
+function placeBlock(){let px=player.x+face*36,py=player.y+player.h*.65;let b=blockAt(px,py);if(!b){showToast('Tidak ada tempat di sana');return}if(world[b.x][b.y]){let up=blockAt(px,py-TILE);if(up)b=up}if(!b||world[b.x][b.y]){showToast('Tempatnya masih terisi');return}if(!world[b.x][b.y+1]&&b.y+1<WORLD_H){showToast('Pasang dekat tanah atau blok lain');return}if(inv[chosen]<=0){showToast('Blok '+names[chosen]+' habis!');return}let cx=(b.x+.5)*TILE,cy=(b.y+.5)*TILE;if(cx>player.x-player.w/2&&cx<player.x+player.w/2&&cy>player.y&&cy<player.y+player.h){showToast('Tidak bisa pasang di tubuh karakter');return}world[b.x][b.y]=chosen;inv[chosen]--;updateHud();save()}
+function roundedRect(x,y,w,h,r){ctx.beginPath();ctx.roundRect?ctx.roundRect(x,y,w,h,r):(ctx.rect(x,y,w,h));ctx.fill()}
+function drawBlock(type,x,y,size=TILE){if(!type)return;let c=colors[type]||'#9c633e';ctx.fillStyle=c;ctx.fillRect(x,y,size,size);ctx.fillStyle='#ffffff20';ctx.fillRect(x+2,y+2,size-4,3);ctx.fillStyle='#10283830';ctx.fillRect(x,y+size-4,size,4);if(type==='grass'){ctx.fillStyle='#83d96a';ctx.fillRect(x,y,size,6);ctx.fillStyle='#4b9e4b';ctx.fillRect(x,y+6,size,2)}else if(type==='dirt'){ctx.fillStyle='#70462f';ctx.fillRect(x+6,y+11,4,3);ctx.fillRect(x+21,y+23,5,3);ctx.fillStyle='#bd8050';ctx.fillRect(x+18,y+7,3,3)}else if(type==='stone'){ctx.fillStyle='#aab8c0';ctx.fillRect(x+5,y+7,8,3);ctx.fillRect(x+18,y+19,9,3);ctx.fillStyle='#697b86';ctx.fillRect(x+3,y+24,7,3)}else if(type==='wood'){ctx.fillStyle='#80512f';ctx.fillRect(x+7,y,3,size);ctx.fillRect(x+21,y,3,size);ctx.fillStyle='#d49b5b';ctx.fillRect(x+12,y+4,5,3)}ctx.strokeStyle='#172d3340';ctx.lineWidth=1;ctx.strokeRect(x+.5,y+.5,size-1,size-1)}
+function drawPlayer(){let x=player.x-camX,y=player.y-camY;let bob=player.onGround&&Math.abs(player.vx)>0?Math.sin(player.walk)*2:0;ctx.save();ctx.translate(Math.round(x),Math.round(y+bob));if(face<0){ctx.translate(player.w,0);ctx.scale(-1,1)}// shadow
+ctx.fillStyle='#17313b55';ctx.beginPath();ctx.ellipse(player.w/2,player.h+2,13,4,0,0,Math.PI*2);ctx.fill();
+// legs
+ctx.fillStyle='#334d8c';ctx.fillRect(3,20,6,8);ctx.fillRect(12,20,6,8);if(player.onGround&&Math.abs(player.vx)>0){let swing=Math.sin(player.walk)*2;ctx.fillRect(3+swing,25,6,4);ctx.fillRect(12-swing,25,6,4)}
+// body
+ctx.fillStyle='#e56b8a';ctx.fillRect(2,10,17,12);ctx.fillStyle='#ff91a8';ctx.fillRect(4,11,12,3);
+// neck and head
+ctx.fillStyle='#f2c49a';ctx.fillRect(8,7,6,5);ctx.fillStyle='#f7d0a8';ctx.fillRect(3,1,15,10);ctx.fillStyle='#573a42';ctx.fillRect(2,0,16,4);ctx.fillRect(1,3,4,7);ctx.fillRect(15,4,3,4);ctx.fillStyle='#263d4b';ctx.fillRect(13,5,2,2);ctx.fillStyle='#fff';ctx.fillRect(14,5,1,1);
+// arm/punch
+ctx.fillStyle='#f2c49a';if(attack>0){ctx.fillRect(16,12,9,4);ctx.fillStyle='#fff0b5';ctx.fillRect(22,10,7,7)}else ctx.fillRect(17,13,4,7);
+ctx.restore()}
+function draw(){ctx.clearRect(0,0,vw,vh);let sky=ctx.createLinearGradient(0,0,0,vh);sky.addColorStop(0,'#74cbe9');sky.addColorStop(1,'#c5f0e4');ctx.fillStyle=sky;ctx.fillRect(0,0,vw,vh);
+// sun and clouds
+ctx.fillStyle='#ffe9a8';ctx.beginPath();ctx.arc(vw*.78, vh*.22,24,0,Math.PI*2);ctx.fill();ctx.fillStyle='#ffffff9c';for(let i=0;i<4;i++){let cx=((i*210-camX*.15)%(vw+200)+vw+200)%(vw+200)-50,cy=vh*(.17+(i%2)*.11);ctx.beginPath();ctx.ellipse(cx,cy,27,10,0,0,Math.PI*2);ctx.ellipse(cx+20,cy-6,19,13,0,0,Math.PI*2);ctx.ellipse(cx+39,cy,24,9,0,0,Math.PI*2);ctx.fill()}
+// distant hills
+ctx.fillStyle='#74bd9a';ctx.beginPath();ctx.moveTo(0,vh*.68);for(let x=0;x<=vw+20;x+=20)ctx.lineTo(x,vh*.62+Math.sin((x+camX*.18)*.008)*25);ctx.lineTo(vw,vh);ctx.lineTo(0,vh);ctx.fill();
+let startX=Math.max(0,Math.floor(camX/TILE)),endX=Math.min(WORLD_W,Math.ceil((camX+vw)/TILE)+1);let startY=Math.max(0,Math.floor(camY/TILE)),endY=Math.min(WORLD_H,Math.ceil((camY+vh)/TILE)+1);
+for(let x=startX;x<endX;x++)for(let y=startY;y<endY;y++){let t=world[x][y];if(t)drawBlock(t,Math.floor(x*TILE-camX),Math.floor(y*TILE-camY))}
+drawPlayer();
+// target highlight
+let b=targetBlock();if(b&&b.type&&Math.abs((b.x+.5)*TILE-player.x)<TILE*2.1){ctx.strokeStyle='#ffe27a';ctx.lineWidth=2;ctx.strokeRect(Math.floor(b.x*TILE-camX)+2,Math.floor(b.y*TILE-camY)+2,TILE-4,TILE-4)}
+// world label
+ctx.fillStyle='#123b4c99';ctx.font='bold 11px system-ui';ctx.fillText('NARA ISLAND',Math.max(10,vw*.5-48),vh*.17);
+}
+function loop(now){let dt=Math.min(.033,(now-last)/1000||0);last=now;if(started){movePlayer(dt);camX=Math.max(0,Math.min(WORLD_W*TILE-vw,player.x-vw*.43));camY=Math.max(0,Math.min(WORLD_H*TILE-vh,player.y-vh*.55));attack=Math.max(0,attack-dt);draw()}requestAnimationFrame(loop)}
+requestAnimationFrame(loop);
+document.querySelectorAll('[data-hold]').forEach(el=>{let key=el.dataset.hold;const down=e=>{e.preventDefault();keys[key]=true;el.classList.add('active');if(key==='jump')jumpQueued=true};const up=e=>{e.preventDefault();keys[key]=false;el.classList.remove('active')};el.addEventListener('pointerdown',down);['pointerup','pointercancel','pointerleave'].forEach(ev=>el.addEventListener(ev,up))});
+document.getElementById('mine').addEventListener('pointerdown',e=>{e.preventDefault();mineBlock()});document.getElementById('place').addEventListener('pointerdown',e=>{e.preventDefault();placeBlock()});
+document.querySelectorAll('.slot').forEach(el=>el.addEventListener('pointerdown',e=>{e.preventDefault();chosen=el.dataset.item;updateHud()}));
+document.getElementById('play').addEventListener('click',()=>{started=true;document.getElementById('start').style.display='none';showToast('Selamat datang di Nara World!');updateHud()});
+addEventListener('keydown',e=>{if(['ArrowLeft','ArrowRight','ArrowUp',' ','a','d','w'].includes(e.key))e.preventDefault();if(e.key==='ArrowLeft'||e.key==='a')keys.left=true;if(e.key==='ArrowRight'||e.key==='d')keys.right=true;if(e.key==='ArrowUp'||e.key==='w'||e.key===' ')jumpQueued=true;if(e.key==='x'||e.key==='j')mineBlock();if(e.key==='z'||e.key==='k')placeBlock()});
+addEventListener('keyup',e=>{if(e.key==='ArrowLeft'||e.key==='a')keys.left=false;if(e.key==='ArrowRight'||e.key==='d')keys.right=false});
+addEventListener('pagehide',save);setInterval(()=>{if(started)save()},8000);updateHud();
+})();
+</script>
+</body>
+</html>
