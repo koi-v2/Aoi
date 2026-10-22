@@ -421,13 +421,13 @@ export const AvatarRenderer: React.FC<AvatarRendererProps> = ({
 
   const avatarDimensions =
     size === 'world'
-      ? 'w-8 h-11 sm:w-9 sm:h-12'
+      ? 'w-6 h-8 sm:w-7 sm:h-9'
       : size === 'medium'
       ? 'w-14 h-18'
       : 'w-20 h-26';
 
   const shadowDimensions =
-    size === 'world' ? 'w-5 h-1.5' : size === 'medium' ? 'w-8 h-2' : 'w-12 h-3';
+    size === 'world' ? 'w-4 h-1' : size === 'medium' ? 'w-8 h-2' : 'w-12 h-3';
 
   return (
     <div
