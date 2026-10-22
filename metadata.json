@@ -1,0 +1,6 @@
+{
+  "name": "Avatar Online Indonesia - Dunia AOI",
+  "description": "Game virtual MMO 2D nostalgia Avatar Online Indonesia (AOI). Kustomisasi avatar chibi keren, jelajahi Taman Kota, Kebun & Pantai, mancing, bertani, dan chat real-time interaktif!",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
