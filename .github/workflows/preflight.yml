@@ -1,0 +1,71 @@
+name: AOI Preflight Check
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: aoi-preflight-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  preflight:
+    name: Validate project before APK workflow
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package.json
+
+      - name: Check required project files
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f package.json || { echo "::error::package.json tidak ditemukan"; exit 1; }
+          test -f index.html || { echo "::error::index.html tidak ditemukan"; exit 1; }
+          test -f src/main.tsx || { echo "::error::src/main.tsx tidak ditemukan"; exit 1; }
+          test -f vite.config.ts || { echo "::error::vite.config.ts tidak ditemukan"; exit 1; }
+          node -e "const p=require('./package.json'); if(!p.scripts?.build) process.exit(1); if(!p.scripts?.lint) process.exit(2); console.log('Project scripts ditemukan:', JSON.stringify(p.scripts, null, 2))"
+          echo "=== Android packaging audit ==="
+          if [ -d android ] || [ -f capacitor.config.ts ] || [ -f settings.gradle ] || [ -f settings.gradle.kts ]; then
+            echo "Native Android/Capacitor files detected."
+          else
+            echo "::notice::Belum ada project Android native/Capacitor. Workflow ini hanya memvalidasi web build; belum menghasilkan APK."
+          fi
+          if [ -f package-lock.json ]; then
+            echo "package-lock.json ditemukan."
+          else
+            echo "::warning::package-lock.json tidak ada; dependency belum dikunci. Setelah preflight lolos, sebaiknya tambahkan lockfile sebelum build APK."
+          fi
+
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: TypeScript check
+        run: npm run lint
+
+      - name: Production build
+        run: npm run build
+
+      - name: Verify build output
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s dist/index.html || { echo "::error::Build selesai tetapi dist/index.html tidak ditemukan/kosong"; exit 1; }
+          echo "Preflight PASS: dist/index.html tersedia."
