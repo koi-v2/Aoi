@@ -84,7 +84,7 @@ export const BoutiqueModal: React.FC<BoutiqueModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto overscroll-contain bg-black/80 p-2 sm:p-4">
-      <div className="relative flex h-[94dvh] max-h-[94dvh] w-full max-w-3xl flex-col overflow-hidden rounded-2xl border-2 border-slate-700 bg-slate-900 shadow-2xl md:h-auto md:max-h-[90vh] md:flex-row">
+      <div className="relative flex h-[94vh] max-h-[94vh] w-full max-w-3xl flex-col overflow-hidden rounded-2xl border-2 border-slate-700 bg-slate-900 shadow-2xl md:h-auto md:max-h-[90vh] md:flex-row">
         {/* Left Column: Live Character Showcase & Preview */}
         <div className="flex shrink-0 flex-col items-center justify-between gap-2 border-b border-slate-800 bg-gradient-to-b from-slate-950 to-slate-900 p-3 md:w-5/12 md:gap-4 md:border-b-0 md:border-r md:p-6">
           <div className="text-center w-full">
@@ -139,7 +139,7 @@ export const BoutiqueModal: React.FC<BoutiqueModalProps> = ({
           </div>
 
           {/* Tab Options Content */}
-          <div className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain p-3 touch-pan-y sm:p-4">
+          <div className="min-h-0 flex-1 space-y-4 overflow-y-scroll overscroll-y-contain p-3 touch-pan-y sm:p-4">
             {activeTab === 'rambut' && (
               <div className="space-y-4">
                 <div>
