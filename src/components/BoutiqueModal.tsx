@@ -83,17 +83,17 @@ export const BoutiqueModal: React.FC<BoutiqueModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
-      <div className="relative w-full max-w-3xl bg-slate-900 border-2 border-slate-700 rounded-2xl overflow-hidden shadow-2xl flex flex-col md:flex-row max-h-[90vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto overscroll-contain bg-black/80 p-2 sm:p-4">
+      <div className="relative flex h-[94dvh] max-h-[94dvh] w-full max-w-3xl flex-col overflow-hidden rounded-2xl border-2 border-slate-700 bg-slate-900 shadow-2xl md:h-auto md:max-h-[90vh] md:flex-row">
         {/* Left Column: Live Character Showcase & Preview */}
-        <div className="w-full md:w-5/12 bg-gradient-to-b from-slate-950 to-slate-900 p-6 flex flex-col items-center justify-between border-b md:border-b-0 md:border-r border-slate-800">
+        <div className="flex shrink-0 flex-col items-center justify-between gap-2 border-b border-slate-800 bg-gradient-to-b from-slate-950 to-slate-900 p-3 md:w-5/12 md:gap-4 md:border-b-0 md:border-r md:p-6">
           <div className="text-center w-full">
             <h2 className="text-lg font-bold text-amber-400">Butik & Salon AOI</h2>
             <p className="text-xs text-slate-400">Atur gayamu biar paling kece di tongkrongan!</p>
           </div>
 
           {/* Large Animated Avatar Stage */}
-          <div className="relative w-44 h-56 bg-slate-800/60 rounded-2xl border border-slate-700 flex items-center justify-center my-4 shadow-inner">
+          <div className="relative my-1 flex h-24 w-24 items-center justify-center rounded-2xl border border-slate-700 bg-slate-800/60 shadow-inner md:my-4 md:h-56 md:w-44">
             <AvatarRenderer
               avatar={avatar}
               action="dance"
@@ -117,7 +117,7 @@ export const BoutiqueModal: React.FC<BoutiqueModalProps> = ({
         </div>
 
         {/* Right Column: Wardrobe Category Tabs & Selector */}
-        <div className="w-full md:w-7/12 flex flex-col bg-slate-900 overflow-hidden">
+        <div className="flex min-h-0 w-full flex-1 flex-col overflow-hidden bg-slate-900 md:w-7/12 md:flex-none">
           {/* Category Tabs */}
           <div className="flex items-center gap-1 p-2 bg-slate-950 border-b border-slate-800 overflow-x-auto text-xs font-semibold">
             {(['rambut', 'baju', 'celana', 'topi', 'aksesoris', 'gelar'] as const).map((tab) => (
@@ -139,7 +139,7 @@ export const BoutiqueModal: React.FC<BoutiqueModalProps> = ({
           </div>
 
           {/* Tab Options Content */}
-          <div className="p-4 overflow-y-auto flex-1 space-y-4">
+          <div className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain p-3 touch-pan-y sm:p-4">
             {activeTab === 'rambut' && (
               <div className="space-y-4">
                 <div>
@@ -317,7 +317,7 @@ export const BoutiqueModal: React.FC<BoutiqueModalProps> = ({
           </div>
 
           {/* Action Footer */}
-          <div className="p-3 bg-slate-950 border-t border-slate-800 flex items-center justify-end gap-2">
+          <div className="flex shrink-0 items-center justify-end gap-2 border-t border-slate-800 bg-slate-950 p-2 sm:p-3">
             <button
               onClick={onClose}
               className="px-4 py-2 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700 text-xs font-semibold"
