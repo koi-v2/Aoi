@@ -17,6 +17,17 @@ const inside = (x: number, y: number, r: Rect, padding = 2.5) =>
   y >= r.top - padding &&
   y <= r.bottom + padding;
 
+const segmentHitsRect = (x1: number, y1: number, x2: number, y2: number, r: Rect) => {
+  // Sample the direct movement path so CSS/NPC interpolation cannot cross a building.
+  const distance = Math.hypot(x2 - x1, y2 - y1);
+  const steps = Math.max(2, Math.ceil(distance / 1.5));
+  for (let i = 1; i <= steps; i++) {
+    const t = i / steps;
+    if (inside(x1 + (x2 - x1) * t, y1 + (y2 - y1) * t, r)) return true;
+  }
+  return false;
+};
+
 /** Keep a character's feet outside solid building footprints. */
 export function resolveWalkPosition(
   map: MapId,
@@ -28,14 +39,19 @@ export function resolveWalkPosition(
   const safeX = Math.max(5, Math.min(95, x));
   const safeY = Math.max(18, Math.min(90, y));
   const areas = SOLID_AREAS[map] ?? [];
-  if (!areas.some((r) => inside(safeX, safeY, r))) {
+  const targetAreas = areas.filter((r) => inside(safeX, safeY, r));
+  if (targetAreas.length === 0) {
+    // If a character starts inside a footprint, let it walk out; otherwise
+    // stop movement that would visually pass through a building.
+    const startsInside = areas.some((r) => inside(currentX, currentY, r, 0.4));
+    const crossesBuilding = areas.some((r) => segmentHitsRect(currentX, currentY, safeX, safeY, r));
+    if (crossesBuilding && !startsInside) return { x: currentX, y: currentY };
     return { x: safeX, y: safeY };
   }
 
   // Pick the closest reachable edge of the building instead of allowing
   // the character to appear inside it.
-  const candidates = areas
-    .filter((r) => inside(safeX, safeY, r))
+  const candidates = targetAreas
     .flatMap((r) => {
       const pad = 3.5;
       return [
