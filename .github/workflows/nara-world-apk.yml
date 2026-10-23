@@ -6,6 +6,8 @@ on:
     paths:
       - 'nara.html'
       - 'assets/character/**'
+      - 'assets/blocks/**'
+      - 'assets/background/**'
       - 'android-app/**'
       - '.github/workflows/nara-world-apk.yml'
 
@@ -36,9 +38,17 @@ jobs:
           set -euo pipefail
           test -s nara.html
           mkdir -p android-app/app/src/main/assets/assets/character
+          mkdir -p android-app/app/src/main/assets/assets/blocks
+          mkdir -p android-app/app/src/main/assets/assets/background
           cp nara.html android-app/app/src/main/assets/nara.html
           if [ -d assets/character ]; then
             find assets/character -maxdepth 1 -type f -name '*.png' -exec cp {} android-app/app/src/main/assets/assets/character/ \;
+          fi
+          if [ -d assets/blocks ]; then
+            find assets/blocks -maxdepth 1 -type f -name '*.png' -exec cp {} android-app/app/src/main/assets/assets/blocks/ \;
+          fi
+          if [ -d assets/background ]; then
+            find assets/background -maxdepth 1 -type f -name '*.png' -exec cp {} android-app/app/src/main/assets/assets/background/ \;
           fi
           echo "Bundled files:"
           find android-app/app/src/main/assets -type f -printf '%P (%s bytes)\n'
