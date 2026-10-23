@@ -1,0 +1,56 @@
+name: Build Nara World APK
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'nara.html'
+      - 'assets/character/**'
+      - 'android-app/**'
+      - '.github/workflows/nara-world-apk.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+
+      - name: Prepare bundled game files
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s nara.html
+          mkdir -p android-app/app/src/main/assets/assets/character
+          cp nara.html android-app/app/src/main/assets/nara.html
+          if [ -d assets/character ]; then
+            find assets/character -maxdepth 1 -type f -name '*.png' -exec cp {} android-app/app/src/main/assets/assets/character/ \;
+          fi
+          echo "Bundled files:"
+          find android-app/app/src/main/assets -type f -printf '%P (%s bytes)\n'
+
+      - name: Build debug APK
+        working-directory: android-app
+        run: gradle --no-daemon assembleDebug
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Nara-World-APK
+          path: android-app/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 14
