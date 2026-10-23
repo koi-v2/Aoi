@@ -54,7 +54,7 @@ function mineBlock(){let b=targetBlock();if(!b||!b.type){showToast('Dekati blok 
 function placeBlock(){let px=player.x+face*36,py=player.y+player.h*.65;let b=blockAt(px,py);if(!b){showToast('Tidak ada tempat di sana');return}if(world[b.x][b.y]){let up=blockAt(px,py-TILE);if(up)b=up}if(!b||world[b.x][b.y]){showToast('Tempatnya masih terisi');return}if(!world[b.x][b.y+1]&&b.y+1<WORLD_H){showToast('Pasang dekat tanah atau blok lain');return}if(inv[chosen]<=0){showToast('Blok '+names[chosen]+' habis!');return}let cx=(b.x+.5)*TILE,cy=(b.y+.5)*TILE;if(cx>player.x-player.w/2&&cx<player.x+player.w/2&&cy>player.y&&cy<player.y+player.h){showToast('Tidak bisa pasang di tubuh karakter');return}world[b.x][b.y]=chosen;inv[chosen]--;updateHud();save()}
 function roundedRect(x,y,w,h,r){ctx.beginPath();ctx.roundRect?ctx.roundRect(x,y,w,h,r):(ctx.rect(x,y,w,h));ctx.fill()}
 function drawBlock(type,x,y,size=TILE){if(!type)return;let c=colors[type]||'#9c633e';ctx.fillStyle=c;ctx.fillRect(x,y,size,size);ctx.fillStyle='#ffffff20';ctx.fillRect(x+2,y+2,size-4,3);ctx.fillStyle='#10283830';ctx.fillRect(x,y+size-4,size,4);if(type==='grass'){ctx.fillStyle='#83d96a';ctx.fillRect(x,y,size,6);ctx.fillStyle='#4b9e4b';ctx.fillRect(x,y+6,size,2)}else if(type==='dirt'){ctx.fillStyle='#70462f';ctx.fillRect(x+6,y+11,4,3);ctx.fillRect(x+21,y+23,5,3);ctx.fillStyle='#bd8050';ctx.fillRect(x+18,y+7,3,3)}else if(type==='stone'){ctx.fillStyle='#aab8c0';ctx.fillRect(x+5,y+7,8,3);ctx.fillRect(x+18,y+19,9,3);ctx.fillStyle='#697b86';ctx.fillRect(x+3,y+24,7,3)}else if(type==='wood'){ctx.fillStyle='#80512f';ctx.fillRect(x+7,y,3,size);ctx.fillRect(x+21,y,3,size);ctx.fillStyle='#d49b5b';ctx.fillRect(x+12,y+4,5,3)}ctx.strokeStyle='#172d3340';ctx.lineWidth=1;ctx.strokeRect(x+.5,y+.5,size-1,size-1)}
-function drawPlayer(){let x=player.x-camX,y=player.y-camY;let bob=player.onGround&&Math.abs(player.vx)>0?Math.sin(player.walk)*2:0;ctx.save();ctx.translate(Math.round(x),Math.round(y+bob));if(face<0){ctx.translate(player.w,0);ctx.scale(-1,1)}// shadow
+function drawFallbackPlayer(){let x=player.x-camX,y=player.y-camY;let bob=player.onGround&&Math.abs(player.vx)>0?Math.sin(player.walk)*2:0;ctx.save();ctx.translate(Math.round(x),Math.round(y+bob));if(face<0){ctx.translate(player.w,0);ctx.scale(-1,1)}// shadow
 ctx.fillStyle='#17313b55';ctx.beginPath();ctx.ellipse(player.w/2,player.h+2,13,4,0,0,Math.PI*2);ctx.fill();
 // legs
 ctx.fillStyle='#334d8c';ctx.fillRect(3,20,6,8);ctx.fillRect(12,20,6,8);if(player.onGround&&Math.abs(player.vx)>0){let swing=Math.sin(player.walk)*2;ctx.fillRect(3+swing,25,6,4);ctx.fillRect(12-swing,25,6,4)}
@@ -65,6 +65,25 @@ ctx.fillStyle='#f2c49a';ctx.fillRect(8,7,6,5);ctx.fillStyle='#f7d0a8';ctx.fillRe
 // arm/punch
 ctx.fillStyle='#f2c49a';if(attack>0){ctx.fillRect(16,12,9,4);ctx.fillStyle='#fff0b5';ctx.fillRect(22,10,7,7)}else ctx.fillRect(17,13,4,7);
 ctx.restore()}
+}
+const idleFrames=['idle1.png','idle2.png','idle3.png','idle4.png'].map(name=>{const im=new Image();im.src='assets/character/'+name;return im});
+let idleClock=0;
+function drawPlayer(){
+ const moving=Math.abs(player.vx)>1;
+ if(moving||attack>0||!idleFrames.some(im=>im.complete&&im.naturalWidth>0)){drawFallbackPlayer();return}
+ idleClock+=Math.min(.033,1/60);
+ const frameIndex=Math.floor((performance.now()/1000)/0.32)%idleFrames.length;
+ const im=idleFrames[frameIndex];
+ if(!im.complete||!im.naturalWidth){drawFallbackPlayer();return}
+ const drawW=48,drawH=64;
+ const x=player.x-camX,y=player.y-camY;
+ ctx.save();
+ ctx.translate(Math.round(x),Math.round(y+player.h));
+ if(face<0){ctx.scale(-1,1)}
+ ctx.imageSmoothingEnabled=false;
+ ctx.drawImage(im,-drawW/2,-drawH,drawW,drawH);
+ ctx.restore();
+}
 function draw(){ctx.clearRect(0,0,vw,vh);let sky=ctx.createLinearGradient(0,0,0,vh);sky.addColorStop(0,'#74cbe9');sky.addColorStop(1,'#c5f0e4');ctx.fillStyle=sky;ctx.fillRect(0,0,vw,vh);
 // sun and clouds
 ctx.fillStyle='#ffe9a8';ctx.beginPath();ctx.arc(vw*.78, vh*.22,24,0,Math.PI*2);ctx.fill();ctx.fillStyle='#ffffff9c';for(let i=0;i<4;i++){let cx=((i*210-camX*.15)%(vw+200)+vw+200)%(vw+200)-50,cy=vh*(.17+(i%2)*.11);ctx.beginPath();ctx.ellipse(cx,cy,27,10,0,0,Math.PI*2);ctx.ellipse(cx+20,cy-6,19,13,0,0,Math.PI*2);ctx.ellipse(cx+39,cy,24,9,0,0,Math.PI*2);ctx.fill()}
