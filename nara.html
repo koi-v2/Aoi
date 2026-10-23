@@ -53,7 +53,47 @@ function targetBlock(){let px=player.x+face*35,py=player.y+player.h*.48;let b=bl
 function fishAtWater(){const b=targetBlock();if(!b||b.type!=='water'||Math.abs((b.x+.5)*TILE-player.x)>TILE*2.1||Math.abs((b.y+.5)*TILE-(player.y+player.h/2))>TILE*2.5){showToast('Mancing hanya bisa di blok air!');return}if(!inWater()&&Math.abs((b.x+.5)*TILE-player.x)>TILE*1.5){showToast('Dekati blok air dulu!');return}showToast('Melempar kail...');setTimeout(()=>{if(Math.random()<.72){inv.fish=(inv.fish||0)+1;showToast('Dapat 1 ikan! 🐟')}else showToast('Ikan belum menyambar, coba lagi!');updateHud();save();},1200)}\nfunction mineBlock(){if(chosen==='rod'){fishAtWater();return}attack=.35;attackStarted=performance.now();let b=targetBlock();if(!b||!b.type){showToast('Dekati blok dulu!');return}if(Math.abs((b.x+.5)*TILE-player.x)>TILE*2.1||Math.abs((b.y+.5)*TILE-(player.y+player.h/2))>TILE*2.2){showToast('Blok terlalu jauh!');return}if(b.y<=1){showToast('Blok ini tidak bisa dihancurkan');return}inv[b.type]=(inv[b.type]||0)+1;world[b.x][b.y]=null;coins+=1;updateHud();save()}
 function placeBlock(){let px=player.x+face*36,py=player.y+player.h*.65;let b=blockAt(px,py);if(!b){showToast('Tidak ada tempat di sana');return}if(world[b.x][b.y]){let up=blockAt(px,py-TILE);if(up)b=up}if(!b||world[b.x][b.y]){showToast('Tempatnya masih terisi');return}if(!world[b.x][b.y+1]&&b.y+1<WORLD_H){showToast('Pasang dekat tanah atau blok lain');return}if(inv[chosen]<=0){showToast('Blok '+names[chosen]+' habis!');return}let cx=(b.x+.5)*TILE,cy=(b.y+.5)*TILE;if(cx>player.x-player.w/2&&cx<player.x+player.w/2&&cy>player.y&&cy<player.y+player.h){showToast('Tidak bisa pasang di tubuh karakter');return}world[b.x][b.y]=chosen;inv[chosen]--;updateHud();save()}
 function roundedRect(x,y,w,h,r){ctx.beginPath();ctx.roundRect?ctx.roundRect(x,y,w,h,r):(ctx.rect(x,y,w,h));ctx.fill()}
-function drawBlock(type,x,y,size=TILE){if(!type)return;ctx.save();ctx.imageSmoothingEnabled=false;if(type==='water'){ctx.globalAlpha=.78;ctx.fillStyle='#138fc8';ctx.fillRect(x,y,size,size);ctx.globalAlpha=.95;ctx.fillStyle='#48d8f2';ctx.fillRect(x,y+2,size,3);ctx.fillStyle='#a3f2ff';const wave=((Math.floor(performance.now()/180)+Math.floor(x/8))%3)*4;ctx.fillRect(x+4+wave,y+8,10,2);ctx.fillRect(x+17-wave,y+19,8,2);ctx.globalAlpha=1;ctx.strokeStyle='#1676a5';ctx.lineWidth=1;ctx.strokeRect(x+.5,y+.5,size-1,size-1);ctx.restore();return}const palettes={grass:{base:'#8b5735',light:'#b97a4b',dark:'#643b29'},dirt:{base:'#95603b',light:'#b97b4d',dark:'#603923'},stone:{base:'#7f8e98',light:'#bdc8cd',dark:'#4e5c66'},wood:{base:'#9a6035',light:'#d69a56',dark:'#633c25'}};const p=palettes[type]||palettes.dirt;ctx.fillStyle=p.base;ctx.fillRect(x,y,size,size);ctx.fillStyle=p.light;ctx.fillRect(x+3,y+4,7,4);ctx.fillRect(x+18,y+15,5,3);ctx.fillStyle=p.dark;ctx.fillRect(x+13,y+9,4,3);ctx.fillRect(x+5,y+23,6,3);if(type==='grass'){ctx.fillStyle='#4a9a43';ctx.fillRect(x,y,size,8);ctx.fillStyle='#78d65b';ctx.fillRect(x,y,size,4);ctx.fillStyle='#a5e66a';ctx.fillRect(x+3,y+1,5,2);ctx.fillRect(x+17,y+2,6,2);ctx.fillStyle='#367b3c';ctx.fillRect(x,y+7,size,2)}else if(type==='stone'){ctx.fillStyle='#d4dce0';ctx.fillRect(x+5,y+6,9,3);ctx.fillRect(x+18,y+19,7,2);ctx.fillStyle='#657680';ctx.fillRect(x+4,y+14,5,4);ctx.fillRect(x+22,y+7,4,5)}else if(type==='wood'){ctx.fillStyle='#754426';ctx.fillRect(x+6,y,3,size);ctx.fillRect(x+22,y,3,size);ctx.fillStyle='#d9a05c';ctx.fillRect(x+10,y+3,11,4);ctx.fillStyle='#744325';ctx.fillRect(x+10,y+15,11,3)}ctx.strokeStyle='#243d3b';ctx.lineWidth=1;ctx.strokeRect(x+.5,y+.5,size-1,size-1);ctx.restore()}
+const blockSprites={grass:'grass.png',dirt:'dirt.png',stone:'rock.png',wood:'wood.png',water:'water.png'};
+const blockImages={};
+Object.entries(blockSprites).forEach(([type,file])=>{const img=new Image();img.src='assets/blocks/'+file;blockImages[type]=img;});
+function drawBlock(type,x,y,size=TILE){
+ if(!type)return;
+ ctx.save();
+ ctx.imageSmoothingEnabled=false;
+ const img=blockImages[type];
+ if(img&&img.complete&&img.naturalWidth){
+  if(type==='water'){
+   ctx.globalAlpha=.84;
+   ctx.drawImage(img,x,y,size,size);
+   ctx.globalAlpha=.42;
+   ctx.fillStyle='#8cecff';
+   const wave=((Math.floor(performance.now()/220)+Math.floor(x/8))%3)*3;
+   ctx.fillRect(x+4+wave,y+5,8,2);
+   ctx.fillRect(x+18-wave,y+size-7,7,2);
+  }else{
+   ctx.drawImage(img,x,y,size,size);
+  }
+  ctx.restore();
+  return;
+ }
+ // Fallback tekstur lama jika aset belum selesai dimuat.
+ if(type==='water'){
+  ctx.globalAlpha=.78;ctx.fillStyle='#138fc8';ctx.fillRect(x,y,size,size);
+  ctx.globalAlpha=.95;ctx.fillStyle='#48d8f2';ctx.fillRect(x,y+2,size,3);
+  ctx.fillStyle='#a3f2ff';const wave=((Math.floor(performance.now()/180)+Math.floor(x/8))%3)*4;
+  ctx.fillRect(x+4+wave,y+8,10,2);ctx.fillRect(x+17-wave,y+19,8,2);
+  ctx.globalAlpha=1;ctx.strokeStyle='#1676a5';ctx.lineWidth=1;ctx.strokeRect(x+.5,y+.5,size-1,size-1);
+  ctx.restore();return;
+ }
+ const palettes={grass:{base:'#8b5735',light:'#b97a4b',dark:'#643b29'},dirt:{base:'#95603b',light:'#b97b4d',dark:'#603923'},stone:{base:'#7f8e98',light:'#bdc8cd',dark:'#4e5c66'},wood:{base:'#9a6035',light:'#d69a56',dark:'#633c25'}};
+ const p=palettes[type]||palettes.dirt;ctx.fillStyle=p.base;ctx.fillRect(x,y,size,size);
+ ctx.fillStyle=p.light;ctx.fillRect(x+3,y+4,7,4);ctx.fillRect(x+18,y+15,5,3);
+ ctx.fillStyle=p.dark;ctx.fillRect(x+13,y+9,4,3);ctx.fillRect(x+5,y+23,6,3);
+ if(type==='grass'){ctx.fillStyle='#4a9a43';ctx.fillRect(x,y,size,8);ctx.fillStyle='#78d65b';ctx.fillRect(x,y,size,4);ctx.fillStyle='#367b3c';ctx.fillRect(x,y+7,size,2)}
+ else if(type==='stone'){ctx.fillStyle='#d4dce0';ctx.fillRect(x+5,y+6,9,3);ctx.fillRect(x+18,y+19,7,2)}
+ else if(type==='wood'){ctx.fillStyle='#754426';ctx.fillRect(x+6,y,3,size);ctx.fillRect(x+22,y,3,size)}
+ ctx.strokeStyle='#243d3b';ctx.lineWidth=1;ctx.strokeRect(x+.5,y+.5,size-1,size-1);ctx.restore();
+}
 function drawFallbackPlayer(){let x=player.x-camX,y=player.y-camY;let bob=player.onGround&&Math.abs(player.vx)>0?Math.sin(player.walk)*2:0;ctx.save();ctx.translate(Math.round(x),Math.round(y+bob));if(face<0){ctx.translate(player.w,0);ctx.scale(-1,1)}
 ctx.fillStyle='#17313b55';ctx.beginPath();ctx.ellipse(player.w/2,player.h+2,13,4,0,0,Math.PI*2);ctx.fill();
 ctx.fillStyle='#334d8c';ctx.fillRect(3,20,6,8);ctx.fillRect(12,20,6,8);if(player.onGround&&Math.abs(player.vx)>0){let swing=Math.sin(player.walk)*2;ctx.fillRect(3+swing,25,6,4);ctx.fillRect(12-swing,25,6,4)}
