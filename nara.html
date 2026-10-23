@@ -44,7 +44,7 @@ function load(){try{let s=JSON.parse(localStorage.getItem('nara-world-save-v1'))
 makeWorld();if(!load())player.y=groundY(player.x)-player.h;createLake();
 function showToast(s){let el=document.getElementById('toast');el.textContent=s;el.style.opacity=1;clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.style.opacity=0,1350)}
 function updateHud(){document.getElementById('coins').textContent=coins;document.getElementById('blocks').textContent=inv.dirt+inv.grass+inv.stone+inv.wood;document.querySelectorAll('.slot').forEach(el=>{let type=el.dataset.item;el.querySelector('small').textContent=inv[type]||0;el.classList.toggle('selected',type===chosen)})}
-function solidAt(px,py){let x0=Math.floor(px/TILE),x1=Math.floor((px-0.01)/TILE),y0=Math.floor(py/TILE),y1=Math.floor((py-0.01)/TILE);return [ [x0,y0],[x1,y0],[x0,y1],[x1,y1] ].some(([x,y])=>x>=0&&x<WORLD_W&&y>=0&&y<WORLD_H&&world[x][y])}
+function solidAt(px,py){let x0=Math.floor(px/TILE),x1=Math.floor((px-0.01)/TILE),y0=Math.floor(py/TILE),y1=Math.floor((py-0.01)/TILE);return [ [x0,y0],[x1,y0],[x0,y1],[x1,y1] ].some(([x,y])=>x>=0&&x<WORLD_W&&y>=0&&y<WORLD_H&&world[x][y]&&world[x][y]!=='water')}
 function blockAt(px,py){let x=Math.floor(px/TILE),y=Math.floor(py/TILE);return x>=0&&x<WORLD_W&&y>=0&&y<WORLD_H?{x,y,type:world[x][y]}:null}
 function playerBox(x=player.x,y=player.y){return{x:x-player.w/2,y:y,w:player.w,h:player.h}}
 function collides(x,y){let b=playerBox(x,y);return solidAt(b.x,b.y)||solidAt(b.x+b.w,b.y)||solidAt(b.x,b.y+b.h)||solidAt(b.x+b.w,b.y+b.h)}
